@@ -1,0 +1,44 @@
+---
+- name: Deploy NotesApp Docker Containers
+  hosts: web
+  become: yes
+
+  tasks:
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+
+    - name: Install Docker
+      apt:
+        name: docker.io
+        state: present
+
+    - name: Stop old backend container
+      docker_container:
+        name: notesapp-backend
+        state: absent
+
+    - name: Stop old frontend container
+      docker_container:
+        name: notesapp-frontend
+        state: absent
+
+    - name: Run backend container
+      docker_container:
+        name: notesapp-backend
+        image: pam2002/notesapp-backend:latest
+        state: started
+        restart_policy: unless-stopped
+        published_ports:
+          - "4000:4000"
+
+    - name: Run frontend container
+      docker_container:
+        name: notesapp-frontend
+        image: pam2002/notesapp-frontend:latest
+        state: started
+        restart_policy: unless-stopped
+        published_ports:
+          - "3000:3000"
+        links:
+          - notesapp-backend:backend

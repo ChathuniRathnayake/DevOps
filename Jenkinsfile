@@ -3,6 +3,9 @@ pipeline {
 
     environment {
         DOCKER_HUB_USERNAME = 'pam2002'
+        ANSIBLE_INVENTORY = "ansible/inventory.ini"
+        ANSIBLE_PLAYBOOK = "ansible/deploy.yml"
+
     }
 
     stages {
@@ -58,10 +61,9 @@ pipeline {
             }
         }
 
-        stage('Deploy Application') {
+        stage('Deploy via Ansible') {
             steps {
-                sh 'chmod +x ./scripts/deploy.sh'
-                sh './scripts/deploy.sh'
+                sh "ansible-playbook -i $ANSIBLE_INVENTORY $ANSIBLE_PLAYBOOK"
             }
         }
 
