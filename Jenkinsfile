@@ -12,6 +12,9 @@ pipeline {
         KUBECONFIG  = '/var/lib/jenkins/.kube/config'
         ANSIBLE_KEY = '/var/lib/jenkins/.ssh/devops-key.pem'
 
+        HOME = '/var/lib/jenkins'
+        TF_PLUGIN_CACHE_DIR = '/var/lib/jenkins/.terraform.d/plugin-cache'
+
     }
 
     stages {
@@ -26,7 +29,11 @@ pipeline {
         stage('Terraform Init') {
             steps {
                 dir("${WORKSPACE}") {
-                sh 'terraform init -upgrade'
+                sh'''
+                terraform init \
+                    -upgrade \
+                    -reconfigure
+                '''
                 }   
             }
         }
