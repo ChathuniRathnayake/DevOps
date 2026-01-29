@@ -2,48 +2,42 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_HUB_CREDENTIALS = credentials('dockerhub-credentials')
         DOCKER_HUB_USERNAME = 'pam2002'
     }
 
     stages {
+
         stage('Clone Repository') {
             steps {
-                git branch: 'main', url: 'https://github.com/ChathuniRathnayake/DevOps.git'
+                git branch: 'main',
+                    url: 'https://github.com/ChathuniRathnayake/DevOps.git'
             }
         }
 
-        stage('Build Frontend Image') {
+        stage('Build Docker Images') {
             steps {
-                script {
-                    dir('my-react-app') { // path to your frontend folder
-                        sh 'docker build -t frontendimage .'
-                        sh 'docker tag frontendimage ${DOCKER_HUB_USERNAME}/notesapp-frontend:latest'
-                    }
-                }
-            }
-        }
-
-        stage('Build Backend Image') {
-            steps {
-                script {
-                    dir('backend') { // path to your backend folder
-                        sh 'docker build -t backendimage .'
-                        sh 'docker tag backendimage ${DOCKER_HUB_USERNAME}/notesapp-backend:latest'
-                    }
-                }
+                sh 'chmod +x ./scripts/build.sh'
+                sh './scripts/build.sh'
             }
         }
 
         stage('Push Images to Docker Hub') {
             steps {
-                script {
-                    withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials', usernameVariable: 'USER', passwordVariable: 'PASS')]) {
-                        sh 'echo $PASS | docker login -u $USER --password-stdin'
-                        sh 'docker push ${DOCKER_HUB_USERNAME}/notesapp-frontend:latest'
-                        sh 'docker push ${DOCKER_HUB_USERNAME}/notesapp-backend:latest'
-                    }
+                withCredentials([usernamePassword(
+                    credentialsId: 'dockerhub-credentials',
+                    usernameVariable: 'DOCKER_USERNAME',
+                    passwordVariable: 'DOCKER_PASSWORD'
+                )]) {
+                    sh 'chmod +x ./scripts/push.sh'
+                    sh './scripts/push.sh'
                 }
+            }
+        }
+
+        stage('Deploy Application') {
+            steps {
+                sh 'chmod +x ./scripts/deploy.sh'
+                sh './scripts/deploy.sh'
             }
         }
 
@@ -51,6 +45,15 @@ pipeline {
             steps {
                 sh 'docker system prune -f'
             }
+        }
+    }
+
+    post {
+        success {
+            echo '✅ Pipeline completed successfully!'
+        }
+        failure {
+            echo '❌ Pipeline failed. Check logs.'
         }
     }
 }
