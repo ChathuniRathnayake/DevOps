@@ -14,6 +14,30 @@ pipeline {
             }
         }
 
+        stage('Terraform Init') {
+            steps {
+                dir("${WORKSPACE}") {
+                sh 'terraform init -upgrade'
+                }   
+            }
+        }
+
+        stage('Terraform Plan') {
+            steps {
+                dir("${WORKSPACE}") {
+                    sh 'terraform plan -out=tfplan'
+                }
+            }
+        }
+
+        stage('Terraform Apply') {
+            steps {
+                dir("${WORKSPACE}") {
+                    sh 'terraform apply -auto-approve tfplan'
+                }
+            }
+        }
+
         stage('Build Docker Images') {
             steps {
                 sh 'chmod +x ./scripts/build.sh'
@@ -40,6 +64,7 @@ pipeline {
                 sh './scripts/deploy.sh'
             }
         }
+
 
     
     }
