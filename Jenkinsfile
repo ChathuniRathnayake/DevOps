@@ -4,6 +4,8 @@ pipeline {
     environment {
         DOCKER_HUB_USERNAME = 'pam2002'
         ANSIBLE_INVENTORY = "ansible/inventory.ini"
+        AWS_KEY     = credentials('aws-access-key')    
+        AWS_SECRET  = credentials('aws-secret-key')
         ANSIBLE_PLAYBOOK = "ansible/deploy.yml"
         KUBECONFIG  = '/var/lib/jenkins/.kube/config'
         ANSIBLE_KEY = '/var/lib/jenkins/.ssh/devops-key.pem'
