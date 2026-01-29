@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: notesapp-backend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: notesapp-backend
+  template:
+    metadata:
+      labels:
+        app: notesapp-backend
+    spec:
+      containers:
+        - name: backend
+          image: pam2002/notesapp-backend:latest
+          ports:
+            - containerPort: 4000

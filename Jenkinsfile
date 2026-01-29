@@ -5,6 +5,8 @@ pipeline {
         DOCKER_HUB_USERNAME = 'pam2002'
         ANSIBLE_INVENTORY = "ansible/inventory.ini"
         ANSIBLE_PLAYBOOK = "ansible/deploy.yml"
+        KUBECONFIG  = '/var/lib/jenkins/.kube/config'
+        ANSIBLE_KEY = '/var/lib/jenkins/.ssh/devops-key.pem'
 
     }
 
@@ -64,6 +66,32 @@ pipeline {
         stage('Deploy via Ansible') {
             steps {
                 sh "ansible-playbook -i $ANSIBLE_INVENTORY $ANSIBLE_PLAYBOOK"
+            }
+        }
+        // Kubernetes deployment stage
+        stage('Deploy to Kubernetes') {
+            steps {
+                dir("${WORKSPACE}") {
+                    sh """
+                    export KUBECONFIG=$KUBECONFIG
+                    kubectl apply -f k8s/backend-deployment.yaml
+                    kubectl apply -f k8s/backend-service.yaml
+                    kubectl apply -f k8s/frontend-deployment.yaml
+                    kubectl apply -f k8s/frontend-service.yaml
+                    kubectl get pods
+                    kubectl get svc
+                    """
+                }
+            }
+        }
+
+        stage('Test Kubernetes') {
+            steps {
+                sh """
+                export KUBECONFIG=$KUBECONFIG
+                kubectl get nodes
+                kubectl get pods -n default
+                """
             }
         }
 
