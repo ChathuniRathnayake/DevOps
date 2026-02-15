@@ -24,7 +24,7 @@ function Login() {
 
   return (
     <div className="login-container">
-      <h2>Login</h2>
+      <h2>Login Chathuni</h2>
       <form onSubmit={handleLogin} className="login-form">
         <input
           type="email"
